@@ -18,6 +18,7 @@ let sceneOffset; // Moves the whole game
 let platforms = [];
 let sticks = [];
 let trees = [];
+let highScore = 0;
 
 // Todo: Save high score to localStorage (?)
 
@@ -60,6 +61,9 @@ const introductionElement = document.getElementById("introduction");
 const perfectElement = document.getElementById("perfect");
 const restartButton = document.getElementById("restart");
 const scoreElement = document.getElementById("score");
+const highScoreElement = document.getElementsByClassName("high")[0];
+
+highScoreElement.innerText = highScore;
 
 // Initialize layout
 resetGame();
@@ -324,9 +328,16 @@ restartButton.addEventListener("click", function (event) {
   event.preventDefault();
   resetGame();
   restartButton.style.display = "none";
+  // Function to check and update high score
+  function checkAndUpdateHighScore() {
+    if (score > highScore) {
+      highScore = score;
+      saveHighScore();
+      showHighScoreNotification();
+    }
+  }
+  checkAndUpdateHighScore();
 });
-
-
 
 function drawHero() {
   ctx.save();
@@ -433,7 +444,6 @@ function drawRoundedRect(x, y, width, height, radius) {
   ctx.fill();
 }
 
-
 function drawBackground() {
   // Draw sky
   var gradient = ctx.createLinearGradient(0, 0, 0, window.innerHeight);
@@ -508,3 +518,52 @@ function getTreeY(x, baseHeight, amplitude) {
   const sineBaseY = window.innerHeight - baseHeight;
   return Math.sinus(x) * amplitude + sineBaseY;
 }
+
+
+// Function to load high score from local storage
+function loadHighScore() {
+  const savedHighScore = localStorage.getItem("highScore");
+  if (savedHighScore) {
+    highScore = parseInt(savedHighScore, 10);
+  }
+}
+
+// Function to save high score to local storage
+function saveHighScore() {
+  localStorage.setItem("highScore", highScore.toString());
+}
+
+
+// Function to show desktop notification for new high score
+function showHighScoreNotification() {
+  if (Notification.permission === "granted") {
+    new Notification("New High Score! my brothaaa", {
+      body: `Congratulations! Respect + ${highScore}.`,
+    });
+  } else if (Notification.permission !== "denied") {
+    Notification.requestPermission().then(permission => {
+      if (permission === "granted") {
+        new Notification("New High Score! my nigga", {
+          body: `Congratulations! Respect ${highScore}.`,
+        });
+      }
+    });
+  }
+}
+
+// Initialize high score on page load
+loadHighScore();
+
+// Example function to simulate scoring
+function increaseScore() {
+  score += 10;
+  checkAndUpdateHighScore();
+}
+
+// Example player object
+const player = {
+  x: 50,
+  y: 50,
+  width: 20,
+  height: 20,
+};
